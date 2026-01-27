@@ -1,0 +1,70 @@
+services:
+  ollama:
+    image: jjsotom2k4/ollama-ai:${VERSION}
+    container_name: ollama
+    environment:
+          OLLAMA_MODELS: ${OLLAMA_MODELS}
+    ports:
+      - "${OLLAMA_PORT}:${OLLAMA_PORT}"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - ai-net
+    restart: unless-stopped
+
+  postgres:
+    image: jjsotom2k4/postgres-ai:${VERSION}
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      EMBEDDING_SIZE: ${EMBEDDING_SIZE}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ai-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  flowise:
+    image: flowiseai/flowise:latest
+    container_name: flowise
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    environment:
+      PORT: ${FLOWISE_PORT}
+      DATABASE_SCHEMA: ${DATABASE_SCHEMA}
+      DATABASE_TYPE: ${DATABASE_TYPE}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+    ports:
+      - "${FLOWISE_PORT}:${FLOWISE_PORT}"
+    volumes:
+      - flowise_data:/root/.flowise
+    networks:
+      - ai-net
+    restart: unless-stopped
+
+networks:
+  ai-net:
+    driver: bridge
+
+volumes:
+  ollama_data:
+  postgres_data:
+  flowise_data:
