@@ -1,0 +1,14 @@
+# Ignorar todo
+**
+
+# ← EXCEPCIONES (cosas que SÍ quieres incluir)
+!Dockerfile
+!docker-compose.yml
+
+# Importante: incluir la carpeta ollama y su contenido
+!ollama/
+!ollama/**
+
+# Importante: incluir la carpeta postgres y su contenido
+!postgres/
+!postgres/**
