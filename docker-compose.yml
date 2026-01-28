@@ -1,7 +1,5 @@
 services:
   ollama:
-    build:
-      context: ./ollama
     image: jjsotom2k4/ollama-ai:${VERSION}
     container_name: ollama
     environment:
@@ -15,7 +13,6 @@ services:
     restart: unless-stopped
 
   postgres:
-    build: ./postgres
     image: jjsotom2k4/postgres-ai:${VERSION}
     container_name: postgres
     environment:
